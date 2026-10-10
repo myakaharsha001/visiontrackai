@@ -87,7 +87,7 @@ py -3.12 --version
 ### 4.2 Get the project folder and open it in VS Code
 ```powershell
 cd $HOME\Documents
-# (if you cloned it from GitHub)   git clone https://github.com/<YOUR-USERNAME>/visiontrack-ai-object-detection.git
+# (if you cloned it from GitHub)   git clone https://github.com/myakaharsha001/visiontrackai.git
 cd visiontrack-ai-object-detection        # or the folder where you unzipped visiontrack-ai
 code .
 ```
@@ -214,11 +214,11 @@ Add real screenshots after running the app (don't include passwords or personal 
 
 ## 13. Author
 
-* Name: `<YOUR NAME>` · Roll no.: `<ROLL NUMBER>` · College/Course: `<COLLEGE, B.Tech CSE (AI & ML)>`
-* GitHub: `https://github.com/<YOUR-USERNAME>` · Medium article: `<LINK AFTER PUBLISHING>`
+* Name: `<MYAKALA HARSHAVARDHAN>` · Roll no.: `<1530>` · College/Course: `<COLLEGE, B.Tech CSE (AI & ML)>`
+* GitHub: `https://github.com/myakaharsha001/visiontrackai>` · Medium article: `<LINK AFTER PUBLISHING>`
 
 ## 14. License
 
-MIT (see `LICENSE` — replace `<YOUR FULL NAME>`). MIT is a common, permissive choice for coursework. Note that **Ultralytics YOLO is licensed under AGPL-3.0** (with a separate commercial licence); fine for an academic project, but check their terms before any commercial use.
-#   v i s i o n t r a c k a i  
+MIT (see `LICENSE` — replace `MYAKALA HARSHAVARDHAN`). MIT is a common, permissive choice for coursework. Note that **Ultralytics YOLO is licensed under AGPL-3.0** (with a separate commercial licence); fine for an academic project, but check their terms before any commercial use.
+ 
  
