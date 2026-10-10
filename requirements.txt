@@ -1,0 +1,14 @@
+# VisionTrack AI - dependencies actually imported by the code.
+# Target: Python 3.12 on Windows 10/11 (CPU only; torch is installed automatically by ultralytics).
+# Version ranges (not exact pins) because install-time resolution was not testable where this
+# project was generated. After YOUR first successful install, record the exact versions with:
+#     pip freeze > requirements-lock.txt
+streamlit>=1.40,<2.0
+opencv-python>=4.9,<5.0
+ultralytics>=8.3,<9.0
+mysql-connector-python>=8.4
+python-dotenv>=1.0
+pandas>=2.2
+numpy>=1.26
+plotly>=5.20,<7.0
+pytest>=8.0
