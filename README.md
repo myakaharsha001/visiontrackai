@@ -222,3 +222,5 @@ Add real screenshots after running the app (don't include passwords or personal 
 MIT (see `LICENSE` — replace `MYAKALA HARSHAVARDHAN`). MIT is a common, permissive choice for coursework. Note that **Ultralytics YOLO is licensed under AGPL-3.0** (with a separate commercial licence); fine for an academic project, but check their terms before any commercial use.
  
  
+#   v i s i o n t r a c k - a i  
+ 
