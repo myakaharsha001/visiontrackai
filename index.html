@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VisionTrack AI</title>
+<style>
+:root{--bg:#0B1220;--cd:#111A2E;--bd:#22304D;--tx:#E6EDF7;--mu:#8FA0BF;--cy:#22D3EE;--bl:#3B82F6;--vi:#8B5CF6;--gr:#34D399;--rd:#F87171}
+*{box-sizing:border-box}body{margin:0;display:flex;min-height:100vh;background:var(--bg);color:var(--tx);font:15px/1.5 "Segoe UI",system-ui,sans-serif}
+aside{width:230px;padding:18px;border-right:1px solid var(--bd);background:#0a1020;flex-shrink:0}
+h1{font-size:1.25rem;margin:0 0 14px;background:linear-gradient(90deg,var(--cy),var(--vi));-webkit-background-clip:text;background-clip:text;color:transparent}
+nav button{display:block;width:100%;text-align:left;margin:3px 0;padding:8px 10px;border:0;border-radius:8px;background:none;color:var(--mu);font:inherit;cursor:pointer}
+nav button.on{background:var(--cd);color:var(--cy);font-weight:600}
+.b{display:inline-block;margin:3px 3px 0 0;padding:2px 9px;border-radius:99px;border:1px solid var(--bd);font-size:.75rem}
+.ok{color:var(--gr);border-color:var(--gr)}.no{color:var(--rd);border-color:var(--rd)}.wa{color:#FBBF24;border-color:#FBBF24}
+main{flex:1;padding:22px;min-width:0;max-width:1100px}
+section{display:none}section.on{display:block}
+h2{margin:0 0 4px}.sub{color:var(--mu);margin:0 0 14px}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:14px}
+.c{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:12px 14px}
+.c small{color:var(--mu);display:block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase}.c b{font-size:1.5rem}
+.lv{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:14px}
+canvas{width:100%;display:block;background:#070c17;border-radius:10px;border:1px solid var(--bd)}
+button.p{background:linear-gradient(90deg,var(--cy),var(--bl));color:#04121f;border:0;border-radius:8px;padding:8px 14px;font:inherit;font-weight:700;cursor:pointer}
+button.s{background:var(--cd);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}
+.r{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+input[type=range]{width:100%;accent-color:var(--cy)}input,select{background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:7px}
+label.k{display:flex;gap:6px;align-items:center;color:var(--mu);margin:3px 0}
+table{width:100%;border-collapse:collapse;font-size:.88rem}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--bd);white-space:nowrap}th{color:var(--mu)}
+.w{overflow-x:auto}#msg{color:#FBBF24;min-height:1.4em}
+@media(max-width:800px){body{flex-direction:column}aside{width:100%}.lv{grid-template-columns:1fr}}
+</style></head><body>
+<aside><h1>VisionTrack AI</h1>
+<nav><button data-p="overview" class="on">Overview</button><button data-p="live">Live Detection Studio</button><button data-p="history">Detection History</button><button data-p="analytics">Analytics</button><button data-p="settings">Settings</button><button data-p="about">About &amp; Help</button></nav>
+<div style="margin-top:16px"><span class="b wa" id="bM">Model loading</span><span class="b" id="bS">Stopped</span><span class="b" id="bD">Data file</span></div></aside>
+<main>
+<section id="overview" class="on"><h2>Overview</h2><p class="sub">Real-time object detection in your browser. Events are saved in this browser (localStorage), not MySQL.</p>
+<div class="g" id="ovC"></div><div class="c"><b style="font-size:1rem">Object distribution</b><canvas id="ovB"></canvas></div></section>
+
+<section id="live"><h2>Live Detection Studio</h2><p class="sub">Webcam or video file. Detection runs locally with TensorFlow.js (COCO-SSD).</p>
+<div class="lv"><div><canvas id="cv" width="640" height="480"></canvas><video id="v" muted playsinline style="display:none"></video>
+<div class="r"><button class="p" id="bCam">Start webcam</button><input type="file" id="file" accept="video/*"><button class="s" id="bVid">Start video file</button><button class="s" id="bPa">Pause</button><button class="s" id="bSt">Stop</button></div><div id="msg" role="status"></div></div>
+<div><div class="g" style="grid-template-columns:1fr 1fr"><div class="c"><small>FPS</small><b id="sF">0</b></div><div class="c"><small>Objects now</small><b id="sO">0</b></div><div class="c"><small>Saved events</small><b id="sV">0</b></div><div class="c"><small>Status</small><b id="sT" style="font-size:1.1rem">Stopped</b></div></div>
+<div class="c"><small>Minimum confidence: <span id="cT">60%</span></small><input type="range" id="conf" min="10" max="95" value="60"><small style="margin-top:8px">Classes to detect</small><div id="chips"></div></div></div></div>
+<div class="c w" style="margin-top:14px"><b style="font-size:1rem">Recent events</b><table><thead><tr><th>Time</th><th>Class</th><th>Confidence</th></tr></thead><tbody id="rec"></tbody></table></div></section>
+
+<section id="history"><h2>Detection History</h2><p class="sub">Search, filter, page through and export saved events.</p>
+<div class="r"><input id="hq" placeholder="Search class"><select id="hc"><option value="">All classes</option></select><button class="s" id="hx">Export CSV</button><span id="hn" class="sub" style="margin:0"></span></div>
+<div class="c w"><table><thead><tr><th>Time</th><th>Class</th><th>Confidence</th><th>Box x,y,w,h</th><th>Source</th></tr></thead><tbody id="hb"></tbody></table></div>
+<div class="r"><button class="s" id="hp">Previous</button><span id="hg"></span><button class="s" id="hN">Next</button></div></section>
+
+<section id="analytics"><h2>Analytics</h2><p class="sub">Computed from saved events.</p>
+<div class="g" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))"><div class="c"><b>Detections per class</b><canvas id="aB"></canvas></div><div class="c"><b>Average confidence per class</b><canvas id="aC"></canvas></div></div>
+<div class="c"><b>Events per minute (last 30 minutes)</b><canvas id="aL"></canvas></div></section>
+
+<section id="settings"><h2>Settings</h2><p class="sub">Defaults come from <code>data/detection_classes.json</code>.</p>
+<div class="c"><small>Cooldown per class: <span id="dT">3 s</span></small><input type="range" id="cool" min="1" max="15" value="3">
+<small style="margin-top:10px">Load a different data file (JSON in the same format)</small><input type="file" id="cfgF" accept=".json">
+<div class="r"><button class="s" id="clr">Clear saved history</button></div><div id="sm" class="sub"></div></div></section>
+
+<section id="about"><h2>About &amp; Help</h2><div class="c"><p>This web version runs real object detection in your browser with TensorFlow.js and the COCO-SSD model (80 everyday classes, including person, cell phone, laptop, backpack, handbag, suitcase and bottle).</p>
+<p>The JSON data file chooses which classes are watched and how they are grouped. It cannot teach the model new objects.</p>
+<p>The full project (Streamlit, YOLO, OpenCV and MySQL) runs on your laptop with <code>streamlit run main.py</code>. This page is a lighter browser edition: the camera needs permission and HTTPS, and history lives in this browser only.</p></div></section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const FB={groups:{"People":["person"],"Phones and electronics":["cell phone","laptop","tv","keyboard","mouse","remote"],"Bags":["backpack","handbag","suitcase"],"Everyday items":["bottle","cup","book","chair","clock","scissors"],"Vehicles":["bicycle","car","motorcycle","bus","truck"],"Animals":["cat","dog","bird"]},defaultGroups:["People","Phones and electronics","Bags","Everyday items"],minScore:.6,cooldownSeconds:3};
+const PAL=["#22D3EE","#8B5CF6","#34D399","#FBBF24","#3B82F6","#F472B6","#F87171"];
+let cfg=FB,watch=new Set(),minScore=.6,cd=3,model=null,stream=null,running=false,paused=false,last={},fps=0,src="webcam",ev=[],pg=0;
+try{ev=JSON.parse(localStorage.getItem("vt_events")||"[]")}catch(e){}
+const save=()=>{try{localStorage.setItem("vt_events",JSON.stringify(ev.slice(-3000)))}catch(e){}};
+const col=c=>PAL[[...c].reduce((a,x)=>a+x.charCodeAt(0),0)%PAL.length];
+const tm=t=>new Date(t).toLocaleTimeString();
+const badge=(id,txt,cl)=>{const e=$(id);e.textContent=txt;e.className="b "+cl};
+const msg=t=>$("#msg").textContent=t||"";
+function applyCfg(c,label){cfg=c;minScore=c.minScore||.6;cd=c.cooldownSeconds||3;
+ watch=new Set((c.defaultGroups||Object.keys(c.groups)).flatMap(g=>c.groups[g]||[]));
+ $("#conf").value=Math.round(minScore*100);$("#cT").textContent=Math.round(minScore*100)+"%";$("#cool").value=cd;$("#dT").textContent=cd+" s";
+ const ch=$("#chips");ch.innerHTML="";
+ Object.entries(c.groups).forEach(([g,list])=>{const l=document.createElement("label");l.className="k";
+  const i=document.createElement("input");i.type="checkbox";i.checked=list.every(x=>watch.has(x));
+  i.onchange=()=>list.forEach(x=>i.checked?watch.add(x):watch.delete(x));
+  l.append(i,document.createTextNode(g+" ("+list.join(", ")+")"));ch.append(l)});
+ badge("#bD",label,"ok")}
+fetch("data/detection_classes.json").then(r=>r.json()).then(j=>applyCfg(j,"Data file loaded")).catch(()=>applyCfg(FB,"Built-in defaults"));
+$("#cfgF").onchange=async e=>{try{const j=JSON.parse(await e.target.files[0].text());if(!j.groups)throw 0;applyCfg(j,"Custom data file");$("#sm").textContent="Loaded "+e.target.files[0].name}catch(x){$("#sm").textContent="That file is not a valid data file."}};
+(async()=>{try{model=await cocoSsd.load({base:"lite_mobilenet_v2"});badge("#bM","Model ready","ok")}catch(e){badge("#bM","Model failed","no");msg("Could not load the model. Check your internet connection and reload.")}})();
+const cv=$("#cv"),ctx=cv.getContext("2d"),v=$("#v");
+function stop(){running=false;paused=false;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}v.pause();v.removeAttribute("src");v.srcObject=null;badge("#bS","Stopped","");$("#sT").textContent="Stopped";$("#sO").textContent=0}
+async function start(s){if(!model){msg("The model is still loading. Wait a moment and try again.");return}
+ stop();msg("");src=s;
+ try{if(s==="webcam"){stream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480}});v.srcObject=stream}
+  else{const f=$("#file").files[0];if(!f){msg("Choose a video file first.");return}v.src=URL.createObjectURL(f);v.loop=true}
+  await v.play();cv.width=v.videoWidth||640;cv.height=v.videoHeight||480;running=true;last={};badge("#bS","Running","ok");$("#sT").textContent="Running";loop()}
+ catch(e){msg(s==="webcam"?"Camera not available ("+(e.name||"error")+"). Allow camera access in the address bar and close other apps using it.":"Could not play that video.")}}
+async function loop(){if(!running)return;
+ if(!paused&&v.readyState>=2){const t0=performance.now();let p=[];try{p=await model.detect(v)}catch(e){}
+  ctx.drawImage(v,0,0,cv.width,cv.height);let n=0;const now=Date.now();
+  p.forEach(o=>{if(o.score<minScore||!watch.has(o.class))return;n++;const[x,y,w,h]=o.bbox,c=col(o.class);
+   ctx.strokeStyle=c;ctx.lineWidth=3;ctx.strokeRect(x,y,w,h);const lb=o.class+" "+Math.round(o.score*100)+"%";
+   ctx.font="15px sans-serif";ctx.fillStyle=c;ctx.fillRect(x,Math.max(0,y-22),ctx.measureText(lb).width+10,22);ctx.fillStyle="#04121f";ctx.fillText(lb,x+5,Math.max(15,y-6));
+   if(!last[o.class]||now-last[o.class]>=cd*1000){last[o.class]=now;ev.push({t:now,c:o.class,p:+o.score.toFixed(3),b:o.bbox.map(Math.round),s:src});save()}});
+  fps=fps*.8+(1000/Math.max(1,performance.now()-t0))*.2;$("#sF").textContent=fps.toFixed(1);$("#sO").textContent=n;$("#sV").textContent=ev.length;recent()}
+ requestAnimationFrame(loop)}
+function recent(){$("#rec").innerHTML=ev.slice(-8).reverse().map(e=>`<tr><td>${tm(e.t)}</td><td>${e.c}</td><td>${(e.p*100).toFixed(1)}%</td></tr>`).join("")}
+$("#bCam").onclick=()=>start("webcam");$("#bVid").onclick=()=>start("video");$("#bSt").onclick=stop;
+$("#bPa").onclick=()=>{if(!running)return;paused=!paused;$("#bPa").textContent=paused?"Resume":"Pause";$("#sT").textContent=paused?"Paused":"Running"};
+$("#conf").oninput=e=>{minScore=e.target.value/100;$("#cT").textContent=e.target.value+"%"};
+$("#cool").oninput=e=>{cd=+e.target.value;$("#dT").textContent=cd+" s"};
+$("#clr").onclick=()=>{if(confirm("Delete all saved events from this browser?")){ev=[];save();$("#sV").textContent=0;show("overview")}};
+function counts(){const m={};ev.forEach(e=>m[e.c]=(m[e.c]||0)+1);return Object.entries(m).sort((a,b)=>b[1]-a[1])}
+function bars(c,items,fm){const W=560,rh=30;c.width=W;c.height=Math.max(60,items.length*rh+16);const g=c.getContext("2d");g.clearRect(0,0,W,c.height);
+ if(!items.length){g.fillStyle="#8FA0BF";g.font="14px sans-serif";g.fillText("No data yet. Run the live detection first.",14,34);return}
+ const mx=Math.max(...items.map(i=>i[1]));items.forEach((it,i)=>{const y=8+i*rh,w=(W-190)*it[1]/mx;g.fillStyle="#E6EDF7";g.font="13px sans-serif";g.fillText(it[0],8,y+17);
+  g.fillStyle=col(it[0]);g.fillRect(110,y+3,Math.max(3,w),18);g.fillStyle="#E6EDF7";g.fillText(fm?fm(it[1]):it[1],116+w,y+17)})}
+function line(c,vals){const W=560,H=220;c.width=W;c.height=H;const g=c.getContext("2d");g.clearRect(0,0,W,H);const mx=Math.max(1,...vals);
+ g.strokeStyle="#22304D";for(let i=0;i<=4;i++){const y=20+i*(H-50)/4;g.beginPath();g.moveTo(40,y);g.lineTo(W-10,y);g.stroke();g.fillStyle="#8FA0BF";g.font="11px sans-serif";g.fillText(Math.round(mx*(4-i)/4),8,y+4)}
+ g.strokeStyle="#8B5CF6";g.lineWidth=2;g.beginPath();vals.forEach((n,i)=>{const x=40+i*(W-50)/(vals.length-1),y=20+(H-50)*(1-n/mx);i?g.lineTo(x,y):g.moveTo(x,y)});g.stroke();
+ g.fillStyle="#8FA0BF";g.fillText("30 min ago",40,H-8);g.fillText("now",W-34,H-8)}
+function ovw(){const cn=counts(),n=ev.length,avg=n?ev.reduce((a,e)=>a+e.p,0)/n:0;
+ const card=(a,b,c)=>`<div class="c"><small>${a}</small><b>${b}</b><small style="text-transform:none">${c}</small></div>`;
+ $("#ovC").innerHTML=card("Total events",n,"saved in this browser")+card("Unique classes",cn.length,"distinct objects")+card("Most frequent",cn[0]?cn[0][0]:"none",cn[0]?cn[0][1]+" events":"")+card("Average confidence",n?(avg*100).toFixed(1)+"%":"n/a","of saved events")+card("Status",running?(paused?"Paused":"Running"):"Stopped","detection engine")+card("Source",src,"video input");
+ bars($("#ovB"),cn.slice(0,8))}
+function hist(){const q=$("#hq").value.toLowerCase(),f=$("#hc").value,sel=$("#hc"),cur=sel.value;
+ const cls=[...new Set(ev.map(e=>e.c))].sort();if(sel.options.length!==cls.length+1){sel.innerHTML='<option value="">All classes</option>'+cls.map(c=>`<option>${c}</option>`).join("");sel.value=cur}
+ const rows=ev.filter(e=>(!q||e.c.includes(q))&&(!f||e.c===f)).reverse(),pages=Math.max(1,Math.ceil(rows.length/15));pg=Math.min(pg,pages-1);
+ $("#hb").innerHTML=rows.slice(pg*15,pg*15+15).map(e=>`<tr><td>${new Date(e.t).toLocaleString()}</td><td>${e.c}</td><td>${(e.p*100).toFixed(1)}%</td><td>${e.b.join(", ")}</td><td>${e.s}</td></tr>`).join("")||'<tr><td colspan="5">No events yet.</td></tr>';
+ $("#hn").textContent=rows.length+" events";$("#hg").textContent="Page "+(pg+1)+" of "+pages}
+$("#hq").oninput=()=>{pg=0;hist()};$("#hc").onchange=()=>{pg=0;hist()};$("#hp").onclick=()=>{pg=Math.max(0,pg-1);hist()};$("#hN").onclick=()=>{pg++;hist()};
+$("#hx").onclick=()=>{if(!ev.length)return;const s="time,class,confidence,x,y,w,h,source\n"+ev.map(e=>[new Date(e.t).toISOString(),e.c,e.p,...e.b,e.s].join(",")).join("\n");
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([s],{type:"text/csv"}));a.download="detections.csv";a.click()};
+function ana(){bars($("#aB"),counts().slice(0,10));const m={};ev.forEach(e=>{(m[e.c]=m[e.c]||[]).push(e.p)});
+ bars($("#aC"),Object.entries(m).map(([k,a])=>[k,a.reduce((x,y)=>x+y,0)/a.length]).sort((a,b)=>b[1]-a[1]).slice(0,10),x=>(x*100).toFixed(1)+"%");
+ const now=Date.now(),b=new Array(30).fill(0);ev.forEach(e=>{const i=29-Math.floor((now-e.t)/60000);if(i>=0&&i<30)b[i]++});line($("#aL"),b)}
+function show(p){$$("section").forEach(s=>s.classList.toggle("on",s.id===p));$$("nav button").forEach(b=>b.classList.toggle("on",b.dataset.p===p));
+ if(p==="overview")ovw();if(p==="history")hist();if(p==="analytics")ana();if(p==="live"){$("#sV").textContent=ev.length;recent()}}
+$$("nav button").forEach(b=>b.onclick=()=>show(b.dataset.p));ovw();
+</script></body></html>
